@@ -132,7 +132,7 @@
     <div id="app" class="w-full h-full flex items-center justify-center relative p-4">
 
         <div id="menu-page" class="w-full flex flex-col items-center space-y-8">
-            <h1 id="title-game" class="text-xl sm:text-6xl font-bold tracking-widest mb-20">
+            <h1 id="title-game" class="text-4xl sm:text-6xl font-bold tracking-widest mb-20">
                 <span class="text-yellow-400">T</span>
                 <span class="text-red-600">I</span>
                 <span class="text-teal-400">C</span>
@@ -172,14 +172,6 @@
         </div>
 
         <div id="game-page" class="w-full hidden flex flex-col items-center justify-center space-y-6">
-            <div class="absolute top-4 left-4">
-                <button id="btn-home" class="text-white text-2xl p-2 rounded-full bg-gray-700 hover:bg-gray-600">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-10v10a1 1 0 001 1h3m-7-2h2m-7 0h2m7 0h2"/>
-                    </svg>
-                </button>
-            </div>
-
             <div class="text-center">
                 <h2 id="score-title" class="text-3xl font-bold mb-3 tracking-widest" style="font-family: 'Sigmar One', cursive; color: #ff3b3b;">SCORE</h2>
                 <div class="flex justify-center space-x-16">
@@ -194,12 +186,19 @@
                 </div>
             </div>
 
-            <div id="board-container" class="grid gap-2 p-2 bg-gray-800 rounded-lg shadow-lg">
+            <div id="board-container" class="grid gap-2 p-2 bg-transparent rounded-lg shadow-lg">
                 </div>
+                
 
-            <div class="flex justify-center mt-4">
+            <div class="flex flex-row items-center justify-center gap-4 mt-4 flex-wrap">
                 <button id="btn-restart" class="px-5 py-2 rounded-full bg-teal-600 text-white font-bold text-lg shadow-xl">
                     RESTART
+                </button>
+                <button id="btn-home" class="flex items-center gap-2 px-5 py-2 rounded-full bg-gray-700 text-white font-semibold text-base shadow hover:bg-gray-600 transition duration-200">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 sm:h-6 sm:w-6" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M10.707 1.707a1 1 0 00-1.414 0l-8 8A1 1 0 002 11h1v6a1 1 0 001 1h4a1 1 0 001-1v-4h2v4a1 1 0 001 1h4a1 1 0 001-1v-6h1a1 1 0 00.707-1.707l-8-8z" />
+        </svg>
+                    Back to Menu
                 </button>
             </div>
         </div>
@@ -211,11 +210,10 @@
             </div>
         </div>
     </div>
-    
-    
-    <div class="absolute bottom-2 right-2 text-xs text-gray-600">
-        Designed by <a href="http://www.freepik.com" target="_blank">rawpixel.com / Freepik</a>
-    </div>
+    <div class="absolute bottom-2 right-2 sm:right-4 sm:bottom-4 text-[10px] sm:text-xs text-gray-600 px-2 sm:px-0 text-right w-full sm:w-auto">
+    Designed by <a href="http://www.freepik.com" target="_blank">rawpixel.com / Freepik</a>
+</div>
+
 
     <script src="script.js"></script>
 </body>
