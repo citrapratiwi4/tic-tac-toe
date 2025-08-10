@@ -7,7 +7,7 @@ Project Tic Tac Toe sederhana.
 - CSS
 - JavaScript
   
-##Features
+## Features
 👥 Play with Friend & 🤖 Play with Computer
 Pemain dapat memilih mode permainan: bermain melawan teman secara lokal (Player vs Player), atau melawan komputer (Player vs Computer).
 
@@ -33,13 +33,13 @@ Pemain bisa me-reset papan permainan kapan saja untuk memulai ronde baru tanpa m
 Tombol ini memungkinkan pemain kembali ke halaman utama untuk memilih ulang mode permainan dan ukuran papan.  
 
 ##Setup Instructions
-# 1. Clone repository
+ 1. Clone repository
 git clone https://github.com/citrapratiwi4/tic-tac-toe.git 
 
-# 2. Masuk ke folder project
+ 2. Masuk ke folder project
 cd tic-tac-toe 
 
-# 3. Buka di browser
+ 3. Buka di browser
 Buka file index.html di browser lokal atau deploy ke GitHub Pages.
 
 ## AI Support Explanation
