@@ -3,10 +3,12 @@
 Project Tic Tac Toe sederhana.
 
 ## Teknologi yang digunakan
-- HTML
-- CSS
-- JavaScript
-- VsCode
+HTML
+Tailwind
+JavaScript
+VS Code
+GitHub (versi kontrol)
+Vercel (untuk deployment)
   
 ## Features
 👥 Play with Friend & 🤖 Play with Computer
