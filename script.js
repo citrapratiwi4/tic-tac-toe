@@ -15,6 +15,10 @@ const gridSizeInputContainer = document.getElementById('grid-size-container');
 const gridSizeInput = document.getElementById('grid-size-input');
 const boardContainer = document.getElementById('board-container');
 
+
+
+
+
 let cells;
 let gameMode = 'pvp';
 let currentPlayer = 'X';
@@ -27,7 +31,7 @@ let winConditionLength = 3;
 
 // Fungsi-fungsi game
 function updateScoresDisplay() {
-    scoreXElement.textContent = ` ${scores.x} wins`;
+    scoreXElement.textContent = `${scores.x} wins`;
     scoreOElement.textContent = `${scores.o} wins`;
 }
 
@@ -156,6 +160,9 @@ function checkResult() {
 
     currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
 }
+
+
+    
 
     function handleComputerTurn() {
     if (!gameActive) return;
@@ -357,7 +364,7 @@ for (let i = 0; i < gridSize * gridSize; i++) {
     const cell = document.createElement('div');
     cell.classList.add(
       'grid-cell',
-      'bg-orange-500',
+      'bg-transparent',
       'border',
       'border-gray-500',
       'flex',
@@ -435,5 +442,4 @@ gridSizeInput.addEventListener('change', () => {
 
 // Panggil inisialisasi
 updateScoresDisplay();
-
 restartGame();
