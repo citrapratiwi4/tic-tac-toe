@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tic Tac Toe</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Irish+Grover&family=Sigmar+One&family=Spicy+Rice&family=Sora:wght@400&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background-image: url('background.jpg');
+            background-size: cover;
+            background-position: center;
+        }
+        #title-game {
+            font-family: 'Irish Grover', cursive;
+            margin-top: 0 !important;
+        }
+        .grid-cell {
+        aspect-ratio: 1 / 1;
+        width: 100%;
+        height: 100%;
+        font-size: calc(5vmin / var(--grid-size));
+    }
+        
+        .container {
+            transition: all 0.5s;
+        }
+        .cell-win {
+            background-color: #2ecc71 !important;
+            transform: scale(1.1);
+        }
+        .pop-up {
+            transition: all 0.5s ease-in-out;
+        }
+        .btn-game {
+            position: relative;
+            padding: 10px 24px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #fff;
+            border: 2px solid;
+            border-radius: 9999px;
+            background-color: transparent;
+            cursor: pointer;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .btn-pvp {
+            border-color: #f1c40f;
+        }
+        .btn-pvc {
+            border-color: #3ce7d9;
+        }
+
+        .btn-pvp.active {
+            background: #f1c40f;
+            color: #1f2937;
+            box-shadow: 0 0 10px #f1c40f, 0 0 20px #f1c40f, 0 0 24px #f1c40f;
+        }
+        .btn-pvc.active {
+            background: #e74c3c;
+            color: #1f2937;
+            box-shadow: 0 0 10px #e74c3c, 0 0 20px #e74c3c, 0 0 24px #e74c3c;
+        }
+
+        .btn-game:hover:not(.active) {
+            transform: scale(1.05);
+            box-shadow: 0 0 5px currentColor;
+        }
+        .btn-level {
+            position: relative;
+            padding: 10px 24px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #fff;
+            border: 2px solid;
+            border-radius: 9999px;
+            background-color: transparent;
+            cursor: pointer;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        #grid-size-input-container label {
+            color: #fff;
+        }
+
+        #grid-size-input {
+            background-color: #1f2937;
+            color: #fff;
+            border: 1px solid #46e559;
+            text-align: center;
+        }
+        
+        #score-title {
+            font-family: 'Sigmar One', cursive;
+            color: #ffeb3b;
+        }
+
+        #player-x {
+            font-family: 'Spicy Rice', cursive;
+            color: #24a69a;
+        }
+
+        #player-o {
+            font-family: 'Sora', sans-serif;
+            color: #ef5360;
+        }
+
+        .text-white {
+            color: #fff;
+        }
+        #board-container {
+        display: grid;
+        gap: 1.5vmin;
+        width: 60vmin;
+        height: 60vmin;
+        max-width: 60vmin;
+        max-height: 60vmin;
+        aspect-ratio: 1 / 1;
+}
+
+
+
+    </style>
+</head>
+<body class="bg-blue-900 text-white font-sans flex items-center justify-center min-h-screen relative">
+    <div id="app" class="w-full h-full flex items-center justify-center relative p-4">
+
+        <div id="menu-page" class="w-full flex flex-col items-center space-y-8">
+            <h1 id="title-game" class="text-xl sm:text-6xl font-bold tracking-widest mb-20">
+                <span class="text-yellow-400">T</span>
+                <span class="text-red-600">I</span>
+                <span class="text-teal-400">C</span>
+                &nbsp;
+                <span class="text-yellow-400">T</span>
+                <span class="text-blue-400">A</span>
+                <span class="text-teal-400">C</span>
+                &nbsp;
+                <span class="text-yellow-400">T</span>
+                <span class="text-purple-400">O</span>
+                <span class="text-green-400">E</span>
+            </h1>
+
+            <div class="flex space-x-4 mt-20">
+                <button id="btn-pvp" class="btn-game btn-pvp active">
+                    Play with friend
+                </button>
+                <button id="btn-pvc" class="btn-game btn-pvc">
+                    Play with computer
+                </button>
+            </div>
+
+                <div id="grid-size-container" class="flex items-center space-x-4 mt-8 hidden">
+                    <!-- Input Grid -->
+                    <div class="flex items-center space-x-2">
+                        <label for="grid-size-input" class="text-white">Grid size :</label>
+                        <input type="number" id="grid-size-input" min="3" value="3" max="6" class="w-16 text-gray-800 rounded px-2 py-1">
+                    </div>
+
+                    <!-- Input Timer -->
+                    
+                </div>
+
+            <button id="btn-start" class="px-10 py-4 rounded-full bg-teal-600 text-white font-bold text-lg shadow-xl mt-20">
+                START GAME
+            </button>
+        </div>
+
+        <div id="game-page" class="w-full hidden flex flex-col items-center justify-center space-y-6">
+            <div class="absolute top-4 left-4">
+                <button id="btn-home" class="text-white text-2xl p-2 rounded-full bg-gray-700 hover:bg-gray-600">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-10v10a1 1 0 001 1h3m-7-2h2m-7 0h2m7 0h2"/>
+                    </svg>
+                </button>
+            </div>
+
+            <div class="text-center">
+                <h2 id="score-title" class="text-3xl font-bold mb-3 tracking-widest" style="font-family: 'Sigmar One', cursive; color: #ff3b3b;">SCORE</h2>
+                <div class="flex justify-center space-x-16">
+                    <div class="flex flex-col items-center">
+                        <span id="player-x" class="text-3xl font-bold" style="font-family: 'Spicy Rice', cursive; color: #24a69a;">X</span>
+                        <span id="score-x" class="text-xl font-bold text-white">0 wins</span>
+                    </div>
+                    <div class="flex flex-col items-center">
+                        <span id="player-o" class="text-3xl font-bold" style="font-family: 'Sora', sans-serif; color: #eff30f;">O</span>
+                        <span id="score-o" class="text-xl font-bold text-white">0 wins</span>
+                    </div>
+                </div>
+            </div>
+
+            <div id="board-container" class="grid gap-2 p-2 bg-gray-800 rounded-lg shadow-lg">
+                </div>
+
+            <div class="flex justify-center mt-4">
+                <button id="btn-restart" class="px-5 py-2 rounded-full bg-teal-600 text-white font-bold text-lg shadow-xl">
+                    RESTART
+                </button>
+            </div>
+        </div>
+
+        <div id="game-popup" class="hidden absolute inset-0 bg-black bg-opacity-70 flex items-center justify-center pop-up">
+            <div class="bg-purple-500 p-8 rounded-lg text-center">
+                <h3 id="popup-text" class="text-4xl font-bold mb-4"></h3>
+                <button id="btn-close-popup" class="px-6 py-2 mt-4 rounded-full bg-teal-600 text-white">Continue</button>
+            </div>
+        </div>
+    </div>
+    
+    
+    <div class="absolute bottom-2 right-2 text-xs text-gray-600">
+        Designed by <a href="http://www.freepik.com" target="_blank">rawpixel.com / Freepik</a>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
