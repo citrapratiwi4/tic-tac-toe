@@ -6,6 +6,7 @@ Project Tic Tac Toe sederhana.
 - HTML
 - CSS
 - JavaScript
+- VsCode
   
 ## Features
 👥 Play with Friend & 🤖 Play with Computer
