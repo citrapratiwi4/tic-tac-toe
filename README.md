@@ -17,19 +17,19 @@ Pengguna bisa menyesuaikan ukuran papan permainan mulai dari 3x3 hingga 6x6.
 🚀 Start Game
 Setelah memilih mode permainan dan ukuran papan, tombol Start digunakan untuk memulai permainan.
 
-🟩 Dinamis Grid Board
+🟩 Dinamis Grid Board :
 Papan permainan akan disesuaikan secara otomatis berdasarkan ukuran grid yang dipilih.
 
-🏆 Scoreboard
+🏆 Scoreboard :
 Menampilkan jumlah kemenangan masing-masing pemain selama sesi berlangsung, dan tetap terjaga meskipun permainan di-restart.
 
-🎉 Win Popup Notification
+🎉 Win Popup Notification :
 Saat salah satu pemain menang atau terjadi seri, akan muncul popup notifikasi dengan pesan hasil dan tombol untuk melanjutkan permainan.
 
-🔁 Tombol Restart
+🔁 Tombol Restart :
 Pemain bisa me-reset papan permainan kapan saja untuk memulai ronde baru tanpa mengubah skor.
 
-🏠 Home Button
+🏠 Home Button :
 Tombol ini memungkinkan pemain kembali ke halaman utama untuk memilih ulang mode permainan dan ukuran papan.  
 
 ##Setup Instructions
