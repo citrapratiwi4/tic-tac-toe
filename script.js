@@ -1,10 +1,8 @@
 // Deklarasi variabel
 const menuPage = document.getElementById('menu-page');
 const gamePage = document.getElementById('game-page');
-
 const btnPvp = document.getElementById('btn-pvp');
 const btnPvc = document.getElementById('btn-pvc');
-
 const btnStart = document.getElementById('btn-start');
 const btnHome = document.getElementById('btn-home');
 const btnRestart = document.getElementById('btn-restart');
@@ -17,13 +15,8 @@ const gridSizeInputContainer = document.getElementById('grid-size-container');
 const gridSizeInput = document.getElementById('grid-size-input');
 const boardContainer = document.getElementById('board-container');
 
-
-
-
-
 let cells;
 let gameMode = 'pvp';
-
 let currentPlayer = 'X';
 let boardState = [];
 let gameActive = true;
@@ -163,46 +156,6 @@ function checkResult() {
 
     currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
 }
-
-
-    function handleComputerTurn() {
-        if (gridSize === 3) {
-            const bestMove = getBestMoveMinimax();
-            cells[bestMove].click();
-        } else {
-            // Strategi dasar blokir atau menang di 4x4 dan 5x5
-            const availableCells = boardState.reduce((acc, cell, index) => {
-                if (cell === '') acc.push(index);
-                return acc;
-            }, []);
-
-            // 1. Cek apakah AI bisa menang
-            for (let index of availableCells) {
-                boardState[index] = 'O';
-                if (checkTempWin('O')) {
-                    boardState[index] = '';
-                    cells[index].click();
-                    return;
-                }
-                boardState[index] = '';
-            }
-
-            // 2. Cek apakah pemain bisa menang, lalu blokir
-            for (let index of availableCells) {
-                boardState[index] = 'X';
-                if (checkTempWin('X')) {
-                    boardState[index] = '';
-                    cells[index].click();
-                    return;
-                }
-                boardState[index] = '';
-            }
-
-            // 3. Jika tidak ada, pilih acak
-            const move = availableCells[Math.floor(Math.random() * availableCells.length)];
-            cells[move].click();
-        }
-    }
 
     function handleComputerTurn() {
     if (!gameActive) return;
@@ -482,4 +435,5 @@ gridSizeInput.addEventListener('change', () => {
 
 // Panggil inisialisasi
 updateScoresDisplay();
+
 restartGame();
