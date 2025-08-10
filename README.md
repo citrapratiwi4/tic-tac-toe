@@ -4,7 +4,7 @@ Project Tic Tac Toe sederhana.
 
 ## Teknologi yang digunakan
 HTML
-Tailwind
+Tailwind CSS
 JavaScript
 VS Code
 GitHub (versi kontrol)
