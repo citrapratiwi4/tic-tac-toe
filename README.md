@@ -33,7 +33,7 @@ Pemain bisa me-reset papan permainan kapan saja untuk memulai ronde baru tanpa m
 🏠 Home Button :
 Tombol ini memungkinkan pemain kembali ke halaman utama untuk memilih ulang mode permainan dan ukuran papan.  
 
-##Setup Instructions
+## Setup Instructions
  1. Clone repository
 git clone https://github.com/citrapratiwi4/tic-tac-toe.git 
 
