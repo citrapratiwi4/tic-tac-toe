@@ -443,3 +443,4 @@ gridSizeInput.addEventListener('change', () => {
 // Panggil inisialisasi
 updateScoresDisplay();
 restartGame();
+
