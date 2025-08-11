@@ -160,7 +160,7 @@ function checkResult() {
 function handleComputerTurn() {
     if (!gameActive) return;
 
-    // 1. Menang langsung
+    // 1. Menang jika bisa
     for (let i = 0; i < boardState.length; i++) {
         if (boardState[i] === '') {
             boardState[i] = 'O';
@@ -173,7 +173,30 @@ function handleComputerTurn() {
         }
     }
 
-    // 2. Blokir kemenangan lawan
+    // 2.5 Cari langkah yang membuat dua ancaman sekaligus (double threat)
+for (let i = 0; i < boardState.length; i++) {
+    if (boardState[i] === '') {
+        boardState[i] = 'O';
+        let threatCount = 0;
+
+        for (let j = 0; j < boardState.length; j++) {
+            if (boardState[j] === '') {
+                boardState[j] = 'O';
+                if (checkTempWin('O')) threatCount++;
+                boardState[j] = '';
+            }
+        }
+
+        boardState[i] = '';
+        if (threatCount >= 2) {
+            makeMove(i, 'O');
+            return;
+        }
+    }
+}
+
+
+    // 2. Blokir jika pemain hampir menang
     for (let i = 0; i < boardState.length; i++) {
         if (boardState[i] === '') {
             boardState[i] = 'X';
@@ -186,20 +209,14 @@ function handleComputerTurn() {
         }
     }
 
-    // 3. Buat fork
-    // (Gunakan kode fork attack di atas)
-
-    // 4. Blokir fork lawan
-    // (Gunakan kode blokir fork lawan di atas)
-
-    // 5. Ambil tengah
+    // 3. Ambil tengah
     const center = Math.floor((gridSize * gridSize) / 2);
     if (boardState[center] === '') {
         makeMove(center, 'O');
         return;
     }
 
-    // 6. Ambil sudut
+    // 4. Ambil corner
     const corners = [
         0,
         gridSize - 1,
@@ -213,9 +230,10 @@ function handleComputerTurn() {
         }
     }
 
-    // 7. Gunakan heuristik
+    // 5. Gunakan heuristik
     let bestScore = -Infinity;
     let bestMove = null;
+
     for (let i = 0; i < boardState.length; i++) {
         if (boardState[i] === '') {
             boardState[i] = 'O';
@@ -230,18 +248,137 @@ function handleComputerTurn() {
 
     if (bestMove !== null) {
         makeMove(bestMove, 'O');
-        return;
+    } else {
+        // fallback: pilih random
+        const available = boardState.reduce((acc, val, idx) => {
+            if (val === '') acc.push(idx);
+            return acc;
+        }, []);
+
+        if (available.length > 0) {
+            const randomMove = available[Math.floor(Math.random() * available.length)];
+            makeMove(randomMove, 'O');
+        }
+    }
+}
+
+function makeMove(index, player) {
+    if (boardState[index] !== '' || !gameActive) return;
+
+    boardState[index] = player;
+    cells[index].textContent = player;
+    cells[index].classList.add(
+        player === 'X' ? 'text-teal-400' : 'text-yellow-400',
+        'font-bold'
+    );
+
+    currentPlayer = player;
+    checkResult();
+}
+
+function checkTempWin(player) {
+    const checkWin = () => {
+        // Horizontal
+        for (let i = 0; i < gridSize; i++) {
+            for (let j = 0; j <= gridSize - winConditionLength; j++) {
+                const indices = Array.from(
+                    { length: winConditionLength },
+                    (_, k) => i * gridSize + j + k
+                );
+                if (indices.every(index => boardState[index] === player)) return true;
+            }
+        }
+
+        // Vertical
+        for (let i = 0; i < gridSize; i++) {
+            for (let j = 0; j <= gridSize - winConditionLength; j++) {
+                const indices = Array.from(
+                    { length: winConditionLength },
+                    (_, k) => (j + k) * gridSize + i
+                );
+                if (indices.every(index => boardState[index] === player)) return true;
+            }
+        }
+
+        // Diagonal ↘
+        for (let i = 0; i <= gridSize - winConditionLength; i++) {
+            for (let j = 0; j <= gridSize - winConditionLength; j++) {
+                const indices = Array.from(
+                    { length: winConditionLength },
+                    (_, k) => (i + k) * gridSize + j + k
+                );
+                if (indices.every(index => boardState[index] === player)) return true;
+            }
+        }
+
+        // Diagonal ↙
+        for (let i = 0; i <= gridSize - winConditionLength; i++) {
+            for (let j = winConditionLength - 1; j < gridSize; j++) {
+                const indices = Array.from(
+                    { length: winConditionLength },
+                    (_, k) => (i + k) * gridSize + (j - k)
+                );
+                if (indices.every(index => boardState[index] === player)) return true;
+            }
+        }
+
+        return false;
+    };
+
+    return checkWin();
+}
+
+function evaluateBoard(player) {
+    let score = 0;
+
+    const directions = [
+        [1, 0],  // horizontal
+        [0, 1],  // vertikal
+        [1, 1],  // diagonal kanan bawah
+        [1, -1], // diagonal kiri bawah
+    ];
+
+    for (let i = 0; i < gridSize; i++) {
+        for (let j = 0; j < gridSize; j++) {
+            for (let [dx, dy] of directions) {
+                let count = 0;
+                let blocked = false;
+
+                for (let k = 0; k < winConditionLength; k++) {
+                    const x = i + dx * k;
+                    const y = j + dy * k;
+                    const idx = x * gridSize + y;
+
+                    if (x >= gridSize || x < 0 || y >= gridSize || y < 0) {
+                        blocked = true;
+                        break;
+                    }
+
+                    const cell = boardState[idx];
+
+                    if (cell === player) {
+                        count++;
+                    } else if (cell !== '') {
+                        blocked = true;
+                        break;
+                    }
+                }
+
+                if (!blocked && count > 0) {
+    // O (AI) lebih agresif, nilai serangan lebih tinggi
+    if (player === 'O') {
+        score += Math.pow(15, count);
+    } else {
+        // Nilai pertahanan (blokir X)
+        score += Math.pow(10, count);
+    }
+}
+
+            }
+        }
     }
 
-    // 8. Fallback random
-    const available = boardState.reduce((acc, val, idx) => {
-        if (val === '') acc.push(idx);
-        return acc;
-    }, []);
-    if (available.length > 0) {
-        const randomMove = available[Math.floor(Math.random() * available.length)];
-        makeMove(randomMove, 'O');
-    }
+    return score;
 }
 
 
