@@ -157,22 +157,59 @@ function checkResult() {
     currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
 }
 
-
-    
-
-   function handleComputerTurn() {
+unction handleComputerTurn() {
     if (!gameActive) return;
 
+    // 1. Menang jika bisa
+    for (let i = 0; i < boardState.length; i++) {
+        if (boardState[i] === '') {
+            boardState[i] = 'O';
+            if (checkTempWin('O')) {
+                boardState[i] = '';
+                makeMove(i, 'O');
+                return;
+            }
+            boardState[i] = '';
+        }
+    }
+
+    // 2. Blokir jika pemain hampir menang
+    for (let i = 0; i < boardState.length; i++) {
+        if (boardState[i] === '') {
+            boardState[i] = 'X';
+            if (checkTempWin('X')) {
+                boardState[i] = '';
+                makeMove(i, 'O');
+                return;
+            }
+            boardState[i] = '';
+        }
+    }
+
+    // 3. Ambil tengah
+    const center = Math.floor((gridSize * gridSize) / 2);
+    if (boardState[center] === '') {
+        makeMove(center, 'O');
+        return;
+    }
+
+    // 4. Ambil corner
+    const corners = [0, gridSize - 1, gridSize * (gridSize - 1), gridSize * gridSize - 1];
+    for (let corner of corners) {
+        if (boardState[corner] === '') {
+            makeMove(corner, 'O');
+            return;
+        }
+    }
+
+    // 5. Gunakan heuristik
     let bestScore = -Infinity;
     let bestMove = null;
-
-    // Batas kedalaman pencarian (biar nggak lambat di grid besar)
-    const depthLimit = gridSize <= 3 ? 9 : gridSize <= 4 ? 6 : 4;
 
     for (let i = 0; i < boardState.length; i++) {
         if (boardState[i] === '') {
             boardState[i] = 'O';
-            let score = minimax(depthLimit, false, -Infinity, Infinity);
+            let score = evaluateBoard('O') - evaluateBoard('X');
             boardState[i] = '';
             if (score > bestScore) {
                 bestScore = score;
@@ -183,45 +220,119 @@ function checkResult() {
 
     if (bestMove !== null) {
         makeMove(bestMove, 'O');
-    }
-}
-
-function minimax(depth, isMaximizing, alpha, beta) {
-    // Cek kemenangan
-    if (checkTempWin('O')) return 1000 + depth; // makin cepat menang makin tinggi
-    if (checkTempWin('X')) return -1000 - depth; // makin cepat kalah makin rendah
-    if (!boardState.includes('')) return 0; // seri
-    if (depth === 0) return evaluateBoard('O') - evaluateBoard('X');
-
-    if (isMaximizing) {
-        let maxEval = -Infinity;
-        for (let i = 0; i < boardState.length; i++) {
-            if (boardState[i] === '') {
-                boardState[i] = 'O';
-                let eval = minimax(depth - 1, false, alpha, beta);
-                boardState[i] = '';
-                maxEval = Math.max(maxEval, eval);
-                alpha = Math.max(alpha, eval);
-                if (beta <= alpha) break;
-            }
-        }
-        return maxEval;
     } else {
-        let minEval = Infinity;
-        for (let i = 0; i < boardState.length; i++) {
-            if (boardState[i] === '') {
-                boardState[i] = 'X';
-                let eval = minimax(depth - 1, true, alpha, beta);
-                boardState[i] = '';
-                minEval = Math.min(minEval, eval);
-                beta = Math.min(beta, eval);
-                if (beta <= alpha) break;
-            }
+        // fallback: pilih random
+        const available = boardState.reduce((acc, val, idx) => {
+            if (val === '') acc.push(idx);
+            return acc;
+        }, []);
+        if (available.length > 0) {
+            const randomMove = available[Math.floor(Math.random() * available.length)];
+            makeMove(randomMove, 'O');
         }
-        return minEval;
     }
 }
+function makeMove(index, player) {
+    if (boardState[index] !== '' || !gameActive) return;
 
+    boardState[index] = player;
+    cells[index].textContent = player;
+    cells[index].classList.add(
+        player === 'X' ? 'text-teal-400' : 'text-yellow-400',
+        'font-bold'
+    );
+
+    currentPlayer = player;
+    checkResult();
+}
+function checkTempWin(player) {
+    const checkWin = () => {
+        // Horizontal
+        for (let i = 0; i < gridSize; i++) {
+            for (let j = 0; j <= gridSize - winConditionLength; j++) {
+                const indices = Array.from({ length: winConditionLength }, (_, k) => i * gridSize + j + k);
+                const line = indices.map(index => boardState[index]);
+                if (line.every(cell => cell === player)) return true;
+            }
+        }
+
+        // Vertical
+        for (let i = 0; i < gridSize; i++) {
+            for (let j = 0; j <= gridSize - winConditionLength; j++) {
+                const indices = Array.from({ length: winConditionLength }, (_, k) => (j + k) * gridSize + i);
+                const line = indices.map(index => boardState[index]);
+                if (line.every(cell => cell === player)) return true;
+            }
+        }
+
+        // Diagonal ↘
+        for (let i = 0; i <= gridSize - winConditionLength; i++) {
+            for (let j = 0; j <= gridSize - winConditionLength; j++) {
+                const indices = Array.from({ length: winConditionLength }, (_, k) => (i + k) * gridSize + j + k);
+                const line = indices.map(index => boardState[index]);
+                if (line.every(cell => cell === player)) return true;
+            }
+        }
+
+        // Diagonal ↙
+        for (let i = 0; i <= gridSize - winConditionLength; i++) {
+            for (let j = winConditionLength - 1; j < gridSize; j++) {
+                const indices = Array.from({ length: winConditionLength }, (_, k) => (i + k) * gridSize + (j - k));
+                const line = indices.map(index => boardState[index]);
+                if (line.every(cell => cell === player)) return true;
+            }
+        }
+
+        return false;
+    };
+
+    return checkWin();
+}
+function evaluateBoard(player) {
+    let score = 0;
+
+    const directions = [
+        [1, 0],  // horizontal
+        [0, 1],  // vertikal
+        [1, 1],  // diagonal kanan bawah
+        [1, -1], // diagonal kiri bawah
+    ];
+
+    for (let i = 0; i < gridSize; i++) {
+        for (let j = 0; j < gridSize; j++) {
+            for (let [dx, dy] of directions) {
+                let count = 0;
+                let blocked = false;
+
+                for (let k = 0; k < winConditionLength; k++) {
+                    const x = i + dx * k;
+                    const y = j + dy * k;
+                    const idx = x * gridSize + y;
+
+                    if (x >= gridSize || x < 0 || y >= gridSize || y < 0) {
+                        blocked = true;
+                        break;
+                    }
+
+                    const cell = boardState[idx];
+
+                    if (cell === player) {
+                        count++;
+                    } else if (cell !== '') {
+                        blocked = true;
+                        break;
+                    }
+                }
+
+                if (!blocked && count > 0) {
+                    score += Math.pow(10, count); // semakin banyak, semakin besar skornya
+                }
+            }
+        }
+    }
+
+    return score;
+}
 
 
 function restartGame() {
@@ -330,6 +441,7 @@ gridSizeInput.addEventListener('change', () => {
 // Panggil inisialisasi
 updateScoresDisplay();
 restartGame();
+
 
 
 
