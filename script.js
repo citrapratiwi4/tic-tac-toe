@@ -15,10 +15,6 @@ const gridSizeInputContainer = document.getElementById('grid-size-container');
 const gridSizeInput = document.getElementById('grid-size-input');
 const boardContainer = document.getElementById('board-container');
 
-
-
-
-
 let cells;
 let gameMode = 'pvp';
 let currentPlayer = 'X';
@@ -164,10 +160,11 @@ function checkResult() {
 
     
 
-    function handleComputerTurn() {
+    // --------------------- AI pintar dengan Minimax + Alpha-Beta ---------------------
+function handleComputerTurn() {
     if (!gameActive) return;
 
-    // 1. Menang jika bisa
+    // 1. Menang jika bisa (quick win)
     for (let i = 0; i < boardState.length; i++) {
         if (boardState[i] === '') {
             boardState[i] = 'O';
@@ -180,7 +177,7 @@ function checkResult() {
         }
     }
 
-    // 2. Blokir jika pemain hampir menang
+    // 2. Blokir jika pemain hampir menang (quick block)
     for (let i = 0; i < boardState.length; i++) {
         if (boardState[i] === '') {
             boardState[i] = 'X';
@@ -193,14 +190,14 @@ function checkResult() {
         }
     }
 
-    // 3. Ambil tengah
+    // 3. Ambil tengah kalau aman
     const center = Math.floor((gridSize * gridSize) / 2);
     if (boardState[center] === '') {
         makeMove(center, 'O');
         return;
     }
 
-    // 4. Ambil corner
+    // 4. Ambil corner jika ada
     const corners = [0, gridSize - 1, gridSize * (gridSize - 1), gridSize * gridSize - 1];
     for (let corner of corners) {
         if (boardState[corner] === '') {
@@ -209,9 +206,30 @@ function checkResult() {
         }
     }
 
-    // 5. Gunakan heuristik
+    // 5. Gunakan Minimax (dengan fallback heuristik jika grid besar)
+    // Atur depth limit: untuk 3x3 kita pakai full depth, untuk 4+ batasi
+    let depthLimit;
+    if (gridSize === 3) {
+        depthLimit = Infinity; // penuh (optimal)
+    } else if (gridSize === 4) {
+        depthLimit = 5;
+    } else if (gridSize === 5) {
+        depthLimit = 4;
+    } else { // 6
+        depthLimit = 3;
+    }
+
+    const result = minimax(depthLimit, true, -Infinity, Infinity);
+    const bestMove = result.index;
+
+    if (typeof bestMove === 'number' && boardState[bestMove] === '') {
+        makeMove(bestMove, 'O');
+        return;
+    }
+
+    // fallback: heuristik evaluateBoard seperti sebelum
     let bestScore = -Infinity;
-    let bestMove = null;
+    let bestMoveFallback = null;
 
     for (let i = 0; i < boardState.length; i++) {
         if (boardState[i] === '') {
@@ -220,125 +238,95 @@ function checkResult() {
             boardState[i] = '';
             if (score > bestScore) {
                 bestScore = score;
-                bestMove = i;
+                bestMoveFallback = i;
             }
         }
     }
 
-    if (bestMove !== null) {
-        makeMove(bestMove, 'O');
+    if (bestMoveFallback !== null) {
+        makeMove(bestMoveFallback, 'O');
+        return;
+    }
+
+    // fallback terakhir: random
+    const available = boardState.reduce((acc, val, idx) => {
+        if (val === '') acc.push(idx);
+        return acc;
+    }, []);
+    if (available.length > 0) {
+        const randomMove = available[Math.floor(Math.random() * available.length)];
+        makeMove(randomMove, 'O');
+    }
+}
+
+/**
+ * Minimax with alpha-beta pruning.
+ * - depthLimit: number or Infinity
+ * - isMaximizing: boolean (true untuk 'O' (AI), false untuk 'X')
+ * returns { score, index }
+ *
+ * NOTE: fungsi ini memodifikasi boardState sementara (set/unset) dan memakai
+ * checkTempWin() untuk deteksi menang cepat.
+ */
+function minimax(depthLimit, isMaximizing, alpha, beta, depth = 0) {
+    // Cek terminal
+    if (checkTempWin('O')) return { score: 1000 - depth }; // AI menang (lebih cepat lebih baik)
+    if (checkTempWin('X')) return { score: -1000 + depth }; // Player menang (lebih lambat lebih baik)
+    if (!boardState.includes('')) return { score: 0 }; // Seri
+
+    if (depthLimit !== Infinity && depth >= depthLimit) {
+        // gunakan heuristic evaluateBoard jika mencapai depth limit
+        const evalScore = evaluateBoard('O') - evaluateBoard('X');
+        return { score: evalScore };
+    }
+
+    if (isMaximizing) {
+        let bestValue = -Infinity;
+        let bestIndex = null;
+
+        for (let i = 0; i < boardState.length; i++) {
+            if (boardState[i] === '') {
+                boardState[i] = 'O';
+                const result = minimax(depthLimit, false, alpha, beta, depth + 1);
+                boardState[i] = '';
+
+                if (result.score > bestValue) {
+                    bestValue = result.score;
+                    bestIndex = i;
+                }
+
+                alpha = Math.max(alpha, bestValue);
+                if (beta <= alpha) {
+                    break; // pruning
+                }
+            }
+        }
+
+        return { score: bestValue, index: bestIndex };
     } else {
-        // fallback: pilih random
-        const available = boardState.reduce((acc, val, idx) => {
-            if (val === '') acc.push(idx);
-            return acc;
-        }, []);
-        if (available.length > 0) {
-            const randomMove = available[Math.floor(Math.random() * available.length)];
-            makeMove(randomMove, 'O');
-        }
-    }
-}
-function makeMove(index, player) {
-    if (boardState[index] !== '' || !gameActive) return;
+        let bestValue = Infinity;
+        let bestIndex = null;
 
-    boardState[index] = player;
-    cells[index].textContent = player;
-    cells[index].classList.add(
-        player === 'X' ? 'text-teal-400' : 'text-yellow-400',
-        'font-bold'
-    );
+        for (let i = 0; i < boardState.length; i++) {
+            if (boardState[i] === '') {
+                boardState[i] = 'X';
+                const result = minimax(depthLimit, true, alpha, beta, depth + 1);
+                boardState[i] = '';
 
-    currentPlayer = player;
-    checkResult();
-}
-function checkTempWin(player) {
-    const checkWin = () => {
-        // Horizontal
-        for (let i = 0; i < gridSize; i++) {
-            for (let j = 0; j <= gridSize - winConditionLength; j++) {
-                const indices = Array.from({ length: winConditionLength }, (_, k) => i * gridSize + j + k);
-                const line = indices.map(index => boardState[index]);
-                if (line.every(cell => cell === player)) return true;
-            }
-        }
-
-        // Vertical
-        for (let i = 0; i < gridSize; i++) {
-            for (let j = 0; j <= gridSize - winConditionLength; j++) {
-                const indices = Array.from({ length: winConditionLength }, (_, k) => (j + k) * gridSize + i);
-                const line = indices.map(index => boardState[index]);
-                if (line.every(cell => cell === player)) return true;
-            }
-        }
-
-        // Diagonal ↘
-        for (let i = 0; i <= gridSize - winConditionLength; i++) {
-            for (let j = 0; j <= gridSize - winConditionLength; j++) {
-                const indices = Array.from({ length: winConditionLength }, (_, k) => (i + k) * gridSize + j + k);
-                const line = indices.map(index => boardState[index]);
-                if (line.every(cell => cell === player)) return true;
-            }
-        }
-
-        // Diagonal ↙
-        for (let i = 0; i <= gridSize - winConditionLength; i++) {
-            for (let j = winConditionLength - 1; j < gridSize; j++) {
-                const indices = Array.from({ length: winConditionLength }, (_, k) => (i + k) * gridSize + (j - k));
-                const line = indices.map(index => boardState[index]);
-                if (line.every(cell => cell === player)) return true;
-            }
-        }
-
-        return false;
-    };
-
-    return checkWin();
-}
-function evaluateBoard(player) {
-    let score = 0;
-
-    const directions = [
-        [1, 0],  // horizontal
-        [0, 1],  // vertikal
-        [1, 1],  // diagonal kanan bawah
-        [1, -1], // diagonal kiri bawah
-    ];
-
-    for (let i = 0; i < gridSize; i++) {
-        for (let j = 0; j < gridSize; j++) {
-            for (let [dx, dy] of directions) {
-                let count = 0;
-                let blocked = false;
-
-                for (let k = 0; k < winConditionLength; k++) {
-                    const x = i + dx * k;
-                    const y = j + dy * k;
-                    const idx = x * gridSize + y;
-
-                    if (x >= gridSize || x < 0 || y >= gridSize || y < 0) {
-                        blocked = true;
-                        break;
-                    }
-
-                    const cell = boardState[idx];
-
-                    if (cell === player) {
-                        count++;
-                    } else if (cell !== '') {
-                        blocked = true;
-                        break;
-                    }
+                if (result.score < bestValue) {
+                    bestValue = result.score;
+                    bestIndex = i;
                 }
 
-                if (!blocked && count > 0) {
-                    score += Math.pow(10, count); // semakin banyak, semakin besar skornya
+                beta = Math.min(beta, bestValue);
+                if (beta <= alpha) {
+                    break; // pruning
                 }
             }
         }
-    }
 
-    return score;
+        return { score: bestValue, index: bestIndex };
+    }
 }
 
 
@@ -449,6 +437,7 @@ gridSizeInput.addEventListener('change', () => {
 // Panggil inisialisasi
 updateScoresDisplay();
 restartGame();
+
 
 
 
