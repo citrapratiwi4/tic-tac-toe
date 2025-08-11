@@ -157,7 +157,7 @@ function checkResult() {
     currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
 }
 
-unction handleComputerTurn() {
+function handleComputerTurn() {
     if (!gameActive) return;
 
     // 1. Menang jika bisa
@@ -194,7 +194,12 @@ unction handleComputerTurn() {
     }
 
     // 4. Ambil corner
-    const corners = [0, gridSize - 1, gridSize * (gridSize - 1), gridSize * gridSize - 1];
+    const corners = [
+        0,
+        gridSize - 1,
+        gridSize * (gridSize - 1),
+        gridSize * gridSize - 1
+    ];
     for (let corner of corners) {
         if (boardState[corner] === '') {
             makeMove(corner, 'O');
@@ -226,12 +231,14 @@ unction handleComputerTurn() {
             if (val === '') acc.push(idx);
             return acc;
         }, []);
+
         if (available.length > 0) {
             const randomMove = available[Math.floor(Math.random() * available.length)];
             makeMove(randomMove, 'O');
         }
     }
 }
+
 function makeMove(index, player) {
     if (boardState[index] !== '' || !gameActive) return;
 
@@ -245,41 +252,50 @@ function makeMove(index, player) {
     currentPlayer = player;
     checkResult();
 }
+
 function checkTempWin(player) {
     const checkWin = () => {
         // Horizontal
         for (let i = 0; i < gridSize; i++) {
             for (let j = 0; j <= gridSize - winConditionLength; j++) {
-                const indices = Array.from({ length: winConditionLength }, (_, k) => i * gridSize + j + k);
-                const line = indices.map(index => boardState[index]);
-                if (line.every(cell => cell === player)) return true;
+                const indices = Array.from(
+                    { length: winConditionLength },
+                    (_, k) => i * gridSize + j + k
+                );
+                if (indices.every(index => boardState[index] === player)) return true;
             }
         }
 
         // Vertical
         for (let i = 0; i < gridSize; i++) {
             for (let j = 0; j <= gridSize - winConditionLength; j++) {
-                const indices = Array.from({ length: winConditionLength }, (_, k) => (j + k) * gridSize + i);
-                const line = indices.map(index => boardState[index]);
-                if (line.every(cell => cell === player)) return true;
+                const indices = Array.from(
+                    { length: winConditionLength },
+                    (_, k) => (j + k) * gridSize + i
+                );
+                if (indices.every(index => boardState[index] === player)) return true;
             }
         }
 
         // Diagonal ↘
         for (let i = 0; i <= gridSize - winConditionLength; i++) {
             for (let j = 0; j <= gridSize - winConditionLength; j++) {
-                const indices = Array.from({ length: winConditionLength }, (_, k) => (i + k) * gridSize + j + k);
-                const line = indices.map(index => boardState[index]);
-                if (line.every(cell => cell === player)) return true;
+                const indices = Array.from(
+                    { length: winConditionLength },
+                    (_, k) => (i + k) * gridSize + j + k
+                );
+                if (indices.every(index => boardState[index] === player)) return true;
             }
         }
 
         // Diagonal ↙
         for (let i = 0; i <= gridSize - winConditionLength; i++) {
             for (let j = winConditionLength - 1; j < gridSize; j++) {
-                const indices = Array.from({ length: winConditionLength }, (_, k) => (i + k) * gridSize + (j - k));
-                const line = indices.map(index => boardState[index]);
-                if (line.every(cell => cell === player)) return true;
+                const indices = Array.from(
+                    { length: winConditionLength },
+                    (_, k) => (i + k) * gridSize + (j - k)
+                );
+                if (indices.every(index => boardState[index] === player)) return true;
             }
         }
 
@@ -288,6 +304,7 @@ function checkTempWin(player) {
 
     return checkWin();
 }
+
 function evaluateBoard(player) {
     let score = 0;
 
@@ -325,7 +342,7 @@ function evaluateBoard(player) {
                 }
 
                 if (!blocked && count > 0) {
-                    score += Math.pow(10, count); // semakin banyak, semakin besar skornya
+                    score += Math.pow(10, count);
                 }
             }
         }
@@ -333,6 +350,7 @@ function evaluateBoard(player) {
 
     return score;
 }
+
 
 
 function restartGame() {
@@ -441,6 +459,7 @@ gridSizeInput.addEventListener('change', () => {
 // Panggil inisialisasi
 updateScoresDisplay();
 restartGame();
+
 
 
 
