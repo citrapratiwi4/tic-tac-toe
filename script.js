@@ -156,8 +156,7 @@ function checkResult() {
 
     currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
 }
-
-function handleComputerTurn() {
+        function handleComputerTurn() {
     if (!gameActive) return;
 
     // 1. Menang jika bisa
@@ -173,29 +172,6 @@ function handleComputerTurn() {
         }
     }
 
-    // 2.5 Cari langkah yang membuat dua ancaman sekaligus (double threat)
-for (let i = 0; i < boardState.length; i++) {
-    if (boardState[i] === '') {
-        boardState[i] = 'O';
-        let threatCount = 0;
-
-        for (let j = 0; j < boardState.length; j++) {
-            if (boardState[j] === '') {
-                boardState[j] = 'O';
-                if (checkTempWin('O')) threatCount++;
-                boardState[j] = '';
-            }
-        }
-
-        boardState[i] = '';
-        if (threatCount >= 2) {
-            makeMove(i, 'O');
-            return;
-        }
-    }
-}
-
-
     // 2. Blokir jika pemain hampir menang
     for (let i = 0; i < boardState.length; i++) {
         if (boardState[i] === '') {
@@ -206,6 +182,28 @@ for (let i = 0; i < boardState.length; i++) {
                 return;
             }
             boardState[i] = '';
+        }
+    }
+
+    // 2.5. Cari langkah yang membuat dua ancaman sekaligus (double threat)
+    for (let i = 0; i < boardState.length; i++) {
+        if (boardState[i] === '') {
+            boardState[i] = 'O';
+            let threatCount = 0;
+
+            for (let j = 0; j < boardState.length; j++) {
+                if (boardState[j] === '') {
+                    boardState[j] = 'O';
+                    if (checkTempWin('O')) threatCount++;
+                    boardState[j] = '';
+                }
+            }
+
+            boardState[i] = '';
+            if (threatCount >= 2) {
+                makeMove(i, 'O');
+                return;
+            }
         }
     }
 
@@ -249,7 +247,7 @@ for (let i = 0; i < boardState.length; i++) {
     if (bestMove !== null) {
         makeMove(bestMove, 'O');
     } else {
-        // fallback: pilih random
+        // fallback: pilih random jika tidak ada langkah yang lebih baik
         const available = boardState.reduce((acc, val, idx) => {
             if (val === '') acc.push(idx);
             return acc;
@@ -330,7 +328,6 @@ function checkTempWin(player) {
 
 function evaluateBoard(player) {
     let score = 0;
-
     const directions = [
         [1, 0],  // horizontal
         [0, 1],  // vertikal
@@ -355,7 +352,6 @@ function evaluateBoard(player) {
                     }
 
                     const cell = boardState[idx];
-
                     if (cell === player) {
                         count++;
                     } else if (cell !== '') {
@@ -365,21 +361,22 @@ function evaluateBoard(player) {
                 }
 
                 if (!blocked && count > 0) {
-    // O (AI) lebih agresif, nilai serangan lebih tinggi
-    if (player === 'O') {
-        score += Math.pow(15, count);
-    } else {
-        // Nilai pertahanan (blokir X)
-        score += Math.pow(10, count);
-    }
-}
-
+                    // O (AI) lebih agresif, nilai serangan lebih tinggi
+                    if (player === 'O') {
+                        score += Math.pow(15, count);
+                    } else {
+                        // Nilai pertahanan (blokir X)
+                        score += Math.pow(10, count);
+                    }
+                }
             }
         }
     }
 
     return score;
 }
+
+
 
 
 
