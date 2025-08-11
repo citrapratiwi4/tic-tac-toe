@@ -160,172 +160,65 @@ function checkResult() {
 
     
 
-    // --------------------- AI pintar dengan Minimax + Alpha-Beta ---------------------
-function handleComputerTurn() {
+   function handleComputerTurn() {
     if (!gameActive) return;
 
-    // 1. Menang jika bisa (quick win)
-    for (let i = 0; i < boardState.length; i++) {
-        if (boardState[i] === '') {
-            boardState[i] = 'O';
-            if (checkTempWin('O')) {
-                boardState[i] = '';
-                makeMove(i, 'O');
-                return;
-            }
-            boardState[i] = '';
-        }
-    }
-
-    // 2. Blokir jika pemain hampir menang (quick block)
-    for (let i = 0; i < boardState.length; i++) {
-        if (boardState[i] === '') {
-            boardState[i] = 'X';
-            if (checkTempWin('X')) {
-                boardState[i] = '';
-                makeMove(i, 'O');
-                return;
-            }
-            boardState[i] = '';
-        }
-    }
-
-    // 3. Ambil tengah kalau aman
-    const center = Math.floor((gridSize * gridSize) / 2);
-    if (boardState[center] === '') {
-        makeMove(center, 'O');
-        return;
-    }
-
-    // 4. Ambil corner jika ada
-    const corners = [0, gridSize - 1, gridSize * (gridSize - 1), gridSize * gridSize - 1];
-    for (let corner of corners) {
-        if (boardState[corner] === '') {
-            makeMove(corner, 'O');
-            return;
-        }
-    }
-
-    // 5. Gunakan Minimax (dengan fallback heuristik jika grid besar)
-    // Atur depth limit: untuk 3x3 kita pakai full depth, untuk 4+ batasi
-    let depthLimit;
-    if (gridSize === 3) {
-        depthLimit = Infinity; // penuh (optimal)
-    } else if (gridSize === 4) {
-        depthLimit = 5;
-    } else if (gridSize === 5) {
-        depthLimit = 4;
-    } else { // 6
-        depthLimit = 3;
-    }
-
-    const result = minimax(depthLimit, true, -Infinity, Infinity);
-    const bestMove = result.index;
-
-    if (typeof bestMove === 'number' && boardState[bestMove] === '') {
-        makeMove(bestMove, 'O');
-        return;
-    }
-
-    // fallback: heuristik evaluateBoard seperti sebelum
     let bestScore = -Infinity;
-    let bestMoveFallback = null;
+    let bestMove = null;
+
+    // Batas kedalaman pencarian (biar nggak lambat di grid besar)
+    const depthLimit = gridSize <= 3 ? 9 : gridSize <= 4 ? 6 : 4;
 
     for (let i = 0; i < boardState.length; i++) {
         if (boardState[i] === '') {
             boardState[i] = 'O';
-            let score = evaluateBoard('O') - evaluateBoard('X');
+            let score = minimax(depthLimit, false, -Infinity, Infinity);
             boardState[i] = '';
             if (score > bestScore) {
                 bestScore = score;
-                bestMoveFallback = i;
+                bestMove = i;
             }
         }
     }
 
-    if (bestMoveFallback !== null) {
-        makeMove(bestMoveFallback, 'O');
-        return;
-    }
-
-    // fallback terakhir: random
-    const available = boardState.reduce((acc, val, idx) => {
-        if (val === '') acc.push(idx);
-        return acc;
-    }, []);
-    if (available.length > 0) {
-        const randomMove = available[Math.floor(Math.random() * available.length)];
-        makeMove(randomMove, 'O');
+    if (bestMove !== null) {
+        makeMove(bestMove, 'O');
     }
 }
 
-/**
- * Minimax with alpha-beta pruning.
- * - depthLimit: number or Infinity
- * - isMaximizing: boolean (true untuk 'O' (AI), false untuk 'X')
- * returns { score, index }
- *
- * NOTE: fungsi ini memodifikasi boardState sementara (set/unset) dan memakai
- * checkTempWin() untuk deteksi menang cepat.
- */
-function minimax(depthLimit, isMaximizing, alpha, beta, depth = 0) {
-    // Cek terminal
-    if (checkTempWin('O')) return { score: 1000 - depth }; // AI menang (lebih cepat lebih baik)
-    if (checkTempWin('X')) return { score: -1000 + depth }; // Player menang (lebih lambat lebih baik)
-    if (!boardState.includes('')) return { score: 0 }; // Seri
-
-    if (depthLimit !== Infinity && depth >= depthLimit) {
-        // gunakan heuristic evaluateBoard jika mencapai depth limit
-        const evalScore = evaluateBoard('O') - evaluateBoard('X');
-        return { score: evalScore };
-    }
+function minimax(depth, isMaximizing, alpha, beta) {
+    // Cek kemenangan
+    if (checkTempWin('O')) return 1000 + depth; // makin cepat menang makin tinggi
+    if (checkTempWin('X')) return -1000 - depth; // makin cepat kalah makin rendah
+    if (!boardState.includes('')) return 0; // seri
+    if (depth === 0) return evaluateBoard('O') - evaluateBoard('X');
 
     if (isMaximizing) {
-        let bestValue = -Infinity;
-        let bestIndex = null;
-
+        let maxEval = -Infinity;
         for (let i = 0; i < boardState.length; i++) {
             if (boardState[i] === '') {
                 boardState[i] = 'O';
-                const result = minimax(depthLimit, false, alpha, beta, depth + 1);
+                let eval = minimax(depth - 1, false, alpha, beta);
                 boardState[i] = '';
-
-                if (result.score > bestValue) {
-                    bestValue = result.score;
-                    bestIndex = i;
-                }
-
-                alpha = Math.max(alpha, bestValue);
-                if (beta <= alpha) {
-                    break; // pruning
-                }
+                maxEval = Math.max(maxEval, eval);
+                alpha = Math.max(alpha, eval);
+                if (beta <= alpha) break;
             }
         }
-
-        return { score: bestValue, index: bestIndex };
+        return maxEval;
     } else {
-        let bestValue = Infinity;
-        let bestIndex = null;
-
+        let minEval = Infinity;
         for (let i = 0; i < boardState.length; i++) {
             if (boardState[i] === '') {
                 boardState[i] = 'X';
-                const result = minimax(depthLimit, true, alpha, beta, depth + 1);
+                let eval = minimax(depth - 1, true, alpha, beta);
                 boardState[i] = '';
-
-                if (result.score < bestValue) {
-                    bestValue = result.score;
-                    bestIndex = i;
-                }
-
-                beta = Math.min(beta, bestValue);
-                if (beta <= alpha) {
-                    break; // pruning
-                }
+                minEval = Math.min(minEval, eval);
+                beta = Math.min(beta, eval);
+                if (beta <= alpha) break;
             }
         }
-
-        return { score: bestValue, index: bestIndex };
+        return minEval;
     }
 }
 
@@ -437,6 +330,7 @@ gridSizeInput.addEventListener('change', () => {
 // Panggil inisialisasi
 updateScoresDisplay();
 restartGame();
+
 
 
 
