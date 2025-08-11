@@ -371,7 +371,7 @@ for (let i = 0; i < gridSize * gridSize; i++) {
       'items-center',
       'justify-center',
       'cursor-pointer',
-      'rounded-lg',
+      
       'font-bold' // biar huruf X/O tebal
     );
 
@@ -443,4 +443,5 @@ gridSizeInput.addEventListener('change', () => {
 // Panggil inisialisasi
 updateScoresDisplay();
 restartGame();
+
 
