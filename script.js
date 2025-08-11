@@ -160,7 +160,7 @@ function checkResult() {
 function handleComputerTurn() {
     if (!gameActive) return;
 
-    // 1. Menang jika bisa
+    // 1. Menang langsung
     for (let i = 0; i < boardState.length; i++) {
         if (boardState[i] === '') {
             boardState[i] = 'O';
@@ -173,7 +173,7 @@ function handleComputerTurn() {
         }
     }
 
-    // 2. Blokir jika pemain hampir menang
+    // 2. Blokir kemenangan lawan
     for (let i = 0; i < boardState.length; i++) {
         if (boardState[i] === '') {
             boardState[i] = 'X';
@@ -186,14 +186,20 @@ function handleComputerTurn() {
         }
     }
 
-    // 3. Ambil tengah
+    // 3. Buat fork
+    // (Gunakan kode fork attack di atas)
+
+    // 4. Blokir fork lawan
+    // (Gunakan kode blokir fork lawan di atas)
+
+    // 5. Ambil tengah
     const center = Math.floor((gridSize * gridSize) / 2);
     if (boardState[center] === '') {
         makeMove(center, 'O');
         return;
     }
 
-    // 4. Ambil corner
+    // 6. Ambil sudut
     const corners = [
         0,
         gridSize - 1,
@@ -207,10 +213,9 @@ function handleComputerTurn() {
         }
     }
 
-    // 5. Gunakan heuristik
+    // 7. Gunakan heuristik
     let bestScore = -Infinity;
     let bestMove = null;
-
     for (let i = 0; i < boardState.length; i++) {
         if (boardState[i] === '') {
             boardState[i] = 'O';
@@ -225,130 +230,18 @@ function handleComputerTurn() {
 
     if (bestMove !== null) {
         makeMove(bestMove, 'O');
-    } else {
-        // fallback: pilih random
-        const available = boardState.reduce((acc, val, idx) => {
-            if (val === '') acc.push(idx);
-            return acc;
-        }, []);
-
-        if (available.length > 0) {
-            const randomMove = available[Math.floor(Math.random() * available.length)];
-            makeMove(randomMove, 'O');
-        }
-    }
-}
-
-function makeMove(index, player) {
-    if (boardState[index] !== '' || !gameActive) return;
-
-    boardState[index] = player;
-    cells[index].textContent = player;
-    cells[index].classList.add(
-        player === 'X' ? 'text-teal-400' : 'text-yellow-400',
-        'font-bold'
-    );
-
-    currentPlayer = player;
-    checkResult();
-}
-
-function checkTempWin(player) {
-    const checkWin = () => {
-        // Horizontal
-        for (let i = 0; i < gridSize; i++) {
-            for (let j = 0; j <= gridSize - winConditionLength; j++) {
-                const indices = Array.from(
-                    { length: winConditionLength },
-                    (_, k) => i * gridSize + j + k
-                );
-                if (indices.every(index => boardState[index] === player)) return true;
-            }
-        }
-
-        // Vertical
-        for (let i = 0; i < gridSize; i++) {
-            for (let j = 0; j <= gridSize - winConditionLength; j++) {
-                const indices = Array.from(
-                    { length: winConditionLength },
-                    (_, k) => (j + k) * gridSize + i
-                );
-                if (indices.every(index => boardState[index] === player)) return true;
-            }
-        }
-
-        // Diagonal ↘
-        for (let i = 0; i <= gridSize - winConditionLength; i++) {
-            for (let j = 0; j <= gridSize - winConditionLength; j++) {
-                const indices = Array.from(
-                    { length: winConditionLength },
-                    (_, k) => (i + k) * gridSize + j + k
-                );
-                if (indices.every(index => boardState[index] === player)) return true;
-            }
-        }
-
-        // Diagonal ↙
-        for (let i = 0; i <= gridSize - winConditionLength; i++) {
-            for (let j = winConditionLength - 1; j < gridSize; j++) {
-                const indices = Array.from(
-                    { length: winConditionLength },
-                    (_, k) => (i + k) * gridSize + (j - k)
-                );
-                if (indices.every(index => boardState[index] === player)) return true;
-            }
-        }
-
-        return false;
-    };
-
-    return checkWin();
-}
-
-function evaluateBoard(player) {
-    let score = 0;
-
-    const directions = [
-        [1, 0],  // horizontal
-        [0, 1],  // vertikal
-        [1, 1],  // diagonal kanan bawah
-        [1, -1], // diagonal kiri bawah
-    ];
-
-    for (let i = 0; i < gridSize; i++) {
-        for (let j = 0; j < gridSize; j++) {
-            for (let [dx, dy] of directions) {
-                let count = 0;
-                let blocked = false;
-
-                for (let k = 0; k < winConditionLength; k++) {
-                    const x = i + dx * k;
-                    const y = j + dy * k;
-                    const idx = x * gridSize + y;
-
-                    if (x >= gridSize || x < 0 || y >= gridSize || y < 0) {
-                        blocked = true;
-                        break;
-                    }
-
-                    const cell = boardState[idx];
-
-                    if (cell === player) {
-                        count++;
-                    } else if (cell !== '') {
-                        blocked = true;
-                        break;
-                    }
-                }
-
-                if (!blocked && count > 0) {
-                    score += Math.pow(10, count);
-                }
-            }
-        }
+        return;
     }
 
-    return score;
+    // 8. Fallback random
+    const available = boardState.reduce((acc, val, idx) => {
+        if (val === '') acc.push(idx);
+        return acc;
+    }, []);
+    if (available.length > 0) {
+        const randomMove = available[Math.floor(Math.random() * available.length)];
+        makeMove(randomMove, 'O');
+    }
 }
 
 
@@ -459,6 +352,7 @@ gridSizeInput.addEventListener('change', () => {
 // Panggil inisialisasi
 updateScoresDisplay();
 restartGame();
+
 
 
 
