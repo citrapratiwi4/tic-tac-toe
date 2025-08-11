@@ -349,11 +349,14 @@ function restartGame() {
     boardState = Array(gridSize * gridSize).fill('');
     boardContainer.innerHTML = '';
     // Atur ulang panjang kemenangan berdasarkan grid size
-if (gridSize >= 5) {
+    if (gridSize === 6) {
+    winConditionLength = 5;
+} else if (gridSize >= 5) {
     winConditionLength = 4;
 } else {
     winConditionLength = 3;
 }
+
 
 
 boardContainer.style.gridTemplateColumns = `repeat(${gridSize}, 1fr)`;
@@ -431,11 +434,14 @@ gridSizeInput.addEventListener('change', () => {
     }
 
     // Atur panjang kemenangan berdasarkan ukuran grid
-    if (gridSize >= 5) {
-        winConditionLength = 4; // 5x5 dan 6x6 → 4 berurutan
-    } else {
-        winConditionLength = 3; // 3x3 dan 4x4 → 3 berurutan
-    }
+    if (gridSize === 6) {
+    winConditionLength = 5;
+} else if (gridSize >= 5) {
+    winConditionLength = 4;
+} else {
+    winConditionLength = 3;
+}
+
 });
 
 
@@ -443,5 +449,6 @@ gridSizeInput.addEventListener('change', () => {
 // Panggil inisialisasi
 updateScoresDisplay();
 restartGame();
+
 
 
